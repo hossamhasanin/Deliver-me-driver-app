@@ -1,0 +1,17 @@
+* The assigning trips algorithm :
+    - I had two ideas about it first that i could build a cloud functions
+      and in that cloud function i listen to the on Create event of the trips collection
+      so that when ever a new trip created i assign the appropriate driver to it based on his location
+      , if the driver rejected the trip there will be another cloud function that will assign another driver.
+
+    - The second idea was that i would make it possible for the drivers to see all the trips closest to them on the map
+      and the could choose to accept any on of the available trips themselves.
+
+    - In this app I would use the second method , because it is relatively simple
+      and of course I am lazy :)
+
+    - One of the key concepts in querying data from firestore based on location
+      is something called geohashing , I use it through a library called geofire
+
+    - Url lesson about geohashing : https://www.youtube.com/watch?v=mx1mMdHBi5Q
+
