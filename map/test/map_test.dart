@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:base/models/direction.dart';
 import 'package:base/models/location.dart';
 import 'package:base/models/trip_data.dart';
+import 'package:base/models/trip_states.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -80,6 +82,30 @@ class TestMapDataSource implements MapDataSource{
           ]
       );
     }
+  }
+
+  @override
+  Stream<TripData> listenToAcceptedTrip(String tripId) {
+    // TODO: implement listenToAcceptedTrip
+    throw UnimplementedError();
+  }
+
+  @override
+  Future updateAcceptedTripLocation(Location location , String id) {
+    // TODO: implement updateAcceptedTripLocation
+    throw UnimplementedError();
+  }
+
+  @override
+  Future updateTripState(TripStates tripState , String id) {
+    // TODO: implement updateTripState
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Direction> getDirectionRoute(Location initialLocation, Location destinationLocation) {
+    // TODO: implement getDirectionRoute
+    throw UnimplementedError();
   }
 
 }

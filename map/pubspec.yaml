@@ -30,6 +30,9 @@ dependencies:
 
   google_maps_flutter: ^2.0.8
   get:
+  flutter_polyline_points: ^1.0.0
+  equatable:
+
 
   base:
     path: ../base

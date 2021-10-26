@@ -8,3 +8,5 @@ export 'models/trip_states.dart';
 export 'models/user.dart';
 export 'collections.dart';
 export 'consts.dart';
+export 'models/payment_methods.dart';
+export 'models/direction.dart';
