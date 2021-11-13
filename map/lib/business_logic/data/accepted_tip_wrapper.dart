@@ -18,6 +18,16 @@ class AcceptedTripWrapper extends Equatable{
     required this.destinationToPickUpLocation
   });
 
+  factory AcceptedTripWrapper.init(){
+    return AcceptedTripWrapper(
+        acceptedTrip: const TripData() ,
+        reachedPickUpLocation: false,
+        pickedUpTheClient: false,
+        isTripEnded: false,
+        destinationToPickUpLocation: const Direction()
+    );
+  }
+
   @override
   List<Object?> get props => [
     acceptedTrip ,
@@ -42,6 +52,7 @@ class AcceptedTripWrapper extends Equatable{
         destinationToPickUpLocation: destinationToPickUpLocation ?? this.destinationToPickUpLocation
     );
   }
+
 
 
 }

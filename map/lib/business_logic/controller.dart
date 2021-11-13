@@ -23,13 +23,7 @@ class MapController extends GetxController {
       myLocation: const LatLng(0.0 , 0.0),
       myCurrentCentralLocation: const LatLng(0.0, 0.0),
       tripsData: List.empty(),
-      acceptedTripWrapper: AcceptedTripWrapper(
-          acceptedTrip: const TripData() ,
-          reachedPickUpLocation: false,
-          pickedUpTheClient: false,
-          isTripEnded: false,
-          destinationToPickUpLocation: const Direction()
-      ),
+      acceptedTripWrapper: AcceptedTripWrapper.init(),
       openedToExploreTrip: const TripData(),
       loading: false,
       error: ""
@@ -70,22 +64,28 @@ class MapController extends GetxController {
         // then just listen to it and send constantly the location to server
         updateLocationToAcceptedTrip();
 
-        if (!viewState.value.acceptedTripWrapper.reachedPickUpLocation){
+        if (!viewState.value.acceptedTripWrapper.pickedUpTheClient){
+          // measure the distance between the driver and pickup location
+          // to determine if he has reached or not
           var distance = _locationUseCase.calculateDistance(viewState.value.myLocation.latitude, viewState.value.myLocation.longitude, viewState.value.acceptedTripWrapper.acceptedTrip.pickUpLocation!.latitude, viewState.value.acceptedTripWrapper.acceptedTrip.pickUpLocation!.longitude);
           distance = distance * 1000;
 
           print("pickup location "+ distance.toString());
-          if (distance <= 100){
+          if (distance <= MINIMUM_CLOSE_DISTANCE){
 
             viewState.value = viewState.value.copy(acceptedTripWrapper: viewState.value.acceptedTripWrapper.copy(reachedPickUpLocation: true));
           }
         } else {
+          // Measure the distance between the driver and the drop off location
           var distance = _locationUseCase.calculateDistance(viewState.value.myLocation.latitude, viewState.value.myLocation.longitude, viewState.value.acceptedTripWrapper.acceptedTrip.dropOffLocation!.latitude, viewState.value.acceptedTripWrapper.acceptedTrip.dropOffLocation!.longitude);
           distance = distance * 1000;
 
-          if (distance <= 4){
+          if (distance <= MINIMUM_CLOSE_DISTANCE){
 
+            // End the trip when we reach the drop off location
             viewState.value = await _useCase.endTrip(viewState.value);
+            // cancel accepted trip stream subscription
+            _acceptedTripSubscription!.cancel();
 
           }
         }
@@ -150,11 +150,30 @@ class MapController extends GetxController {
     if (!viewState.value.acceptedTripWrapper.pickedUpTheClient){
       return;
     }
+
+    viewState.value = viewState.value.copy(acceptedTripWrapper: AcceptedTripWrapper.init() , openedToExploreTrip: const TripData());
+    listenToTrips();
   }
 
   _setDirectionRoute() async{
     viewState.value = viewState.value.copy(loading: true);
     viewState.value = await _useCase.getRouteToPickUpLocation(viewState.value);
+  }
+
+  setTheAcceptedTrip(TripData tripData) async {
+
+    viewState.value = viewState.value.copy(
+        myLocation: LatLng(tripData.driverLocation!.latitude!, tripData.driverLocation!.longitude!),
+        acceptedTripWrapper: viewState.value.acceptedTripWrapper.copy(
+            acceptedTrip: tripData,
+            pickedUpTheClient: tripData.tripState! != TripStates.driverNotHere
+        )
+    );
+
+    if (tripData.tripState! == TripStates.driverNotHere){
+      _setDirectionRoute();
+    }
+
   }
 
   @override

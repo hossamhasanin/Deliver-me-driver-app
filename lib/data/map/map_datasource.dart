@@ -52,7 +52,7 @@ class MapDataSourceImp extends MapDataSource {
 
     return query.update({
       "driverLocation" : driverLocation.data,
-      "driverId": user.id,
+      "driverId": user!.id,
       "driverName": user.name,
       "driverEmail" : user.email,
       "driverPhone" : user.phone,

@@ -60,51 +60,13 @@ class _BodyState extends State<Body> {
 
   final PageController _pageController = PageController();
 
+  Worker? _viewStateListener;
+
   @override
   void initState() {
     super.initState();
 
-
-    ever(_mapController.viewState, (ViewState viewState){
-      if (viewState.myLocation.latitude != 0.0){
-        if (_googleMapController != null) {
-          _googleMapController!.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: viewState.myLocation, zoom: 14)));
-        }
-      }
-
-      if (viewState.loading){
-        dialogOverlayContext = Get.overlayContext;
-        showDialog(context: dialogOverlayContext!, builder: (_){
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }, barrierDismissible: false);
-      } else {
-        if (dialogOverlayContext != null){
-          Navigator.pop(Get.overlayContext!);
-          dialogOverlayContext = null;
-        }
-      }
-
-      if (viewState.acceptedTripWrapper.isTripEnded){
-        dialogOverlayContext = Get.overlayContext;
-        String message = viewState.acceptedTripWrapper.acceptedTrip.paymentMethod! == PaymentMethods.cash.toString() ? "The cost is "+_mapController.viewState.value.acceptedTripWrapper.acceptedTrip.cost!.toString() :
-            "Payed in credit card";
-        showGeneralDialog(context: dialogOverlayContext!, pageBuilder: (BuildContext context ,Animation animation , Animation a){
-          return Column(
-            children: [
-              const Text("The trip has ended"),
-              Text(message)
-            ],
-          );
-        } , barrierDismissible: false);
-      } else {
-        if (dialogOverlayContext != null){
-          Navigator.pop(Get.overlayContext!);
-          dialogOverlayContext = null;
-        }
-      }
-    });
+    _listenToViewState();
 
     BitmapDescriptor.fromAssetImage(const ImageConfiguration(devicePixelRatio: 10), "assets/images/automobile.png")
         .then((value) {
@@ -137,7 +99,13 @@ class _BodyState extends State<Body> {
             onMapCreated: (GoogleMapController mapController) {
               _mainMapCompleter.complete(mapController);
               _googleMapController = mapController;
+
+              TripData? acceptedTripPreviously = Get.arguments;
+              if (acceptedTripPreviously != null) {
+                _mapController.setTheAcceptedTrip(acceptedTripPreviously);
+              }
               _mapController.listenToTheLocation();
+
             },
           );
         }),
@@ -145,7 +113,9 @@ class _BodyState extends State<Body> {
         Obx((){
 
           if (_mapController.viewState.value.openedToExploreTrip.id != null){
-            _tripInfoBoxHeight = 200.0;
+            _tripInfoBoxHeight = 150.0;
+          } else {
+            _tripInfoBoxHeight = 0.0;
           }
 
           if (_mapController.viewState.value.acceptedTripWrapper.acceptedTrip.id != null){
@@ -175,7 +145,6 @@ class _BodyState extends State<Body> {
                           child: IconButton(
                             onPressed: (){
                               _mapController.openTripToExplore(const TripData());
-                              _tripInfoBoxHeight = 0.0;
                             },
                             icon: const Icon(Icons.cancel_outlined),
                           ),
@@ -276,6 +245,71 @@ class _BodyState extends State<Body> {
       );
       mapMarkers.add(tripsMarker);
     }
+  }
+
+  _listenToViewState(){
+    _viewStateListener = ever(_mapController.viewState, (ViewState viewState){
+      if (viewState.myLocation.latitude != 0.0){
+        if (_googleMapController != null) {
+          _googleMapController!.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: viewState.myLocation, zoom: 14)));
+        }
+      }
+
+      if (viewState.loading){
+        dialogOverlayContext = Get.overlayContext;
+        showDialog(context: dialogOverlayContext!, builder: (_){
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }, barrierDismissible: false);
+      } else {
+        if (dialogOverlayContext != null){
+          Navigator.pop(Get.overlayContext!);
+          dialogOverlayContext = null;
+        }
+      }
+
+      if (viewState.acceptedTripWrapper.isTripEnded){
+        if (dialogOverlayContext == null){
+          dialogOverlayContext = Get.overlayContext;
+          String message = viewState.acceptedTripWrapper.acceptedTrip.paymentMethod! == PaymentMethods.cash.toString() ? "The cost is "+_mapController.viewState.value.acceptedTripWrapper.acceptedTrip.cost!.toString() :
+          "Payed in credit card";
+          showDialog(context: Get.context!, builder: (_){
+            return WillPopScope(
+              onWillPop: () async {
+                // dialogOverlayContext = null;
+                _mapController.endTrip();
+                return true;
+              },
+              child: Dialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+                child: SizedBox(
+                  height: 300.0,
+                  width: 300.0,
+                  child: Column(
+                    children: [
+                      const Text("The trip has ended"),
+                      ElevatedButton(
+                          onPressed: (){
+                            Navigator.pop(dialogOverlayContext!);
+                            dialogOverlayContext = null;
+                            _mapController.endTrip();
+                          }, child: const Text("Done"))
+                    ],
+                  ),
+                ),
+              ),
+            );
+          } , barrierDismissible: false);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _viewStateListener!.dispose();
+    super.dispose();
   }
 
 }

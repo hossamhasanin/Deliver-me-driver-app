@@ -19,7 +19,7 @@ class MapUseCase {
   Future<ViewState> acceptAtrip(TripData tripData , ViewState viewState) async {
     try{
       await _dataSource.acceptTheTrip(tripData , Location(latitude: viewState.myLocation.latitude, longitude: viewState.myLocation.longitude));
-      return viewState.copy(myPreviousCentralLocation: const LatLng(0.0, 0.0) , loading: false , error: "" , tripsData: [] , openedToExploreTrip: const TripData() , acceptedTripWrapper: viewState.acceptedTripWrapper.copy(acceptedTrip: tripData));
+      return viewState.copy(myPreviousCentralLocation: const LatLng(0.0, 0.0) , loading: false , error: "" , tripsData: [], acceptedTripWrapper: viewState.acceptedTripWrapper.copy(acceptedTrip: tripData));
     } catch(e){
       return viewState.copy(loading: false , error: "" , acceptedTripWrapper: viewState.acceptedTripWrapper.copy(acceptedTrip: const TripData()));
     }
@@ -59,7 +59,7 @@ class MapUseCase {
   Future<ViewState> pickUpTheClient(ViewState viewState) async {
     try{
       await _dataSource.updateTripState(TripStates.driverArrived , viewState.acceptedTripWrapper.acceptedTrip.id!);
-      return viewState.copy(acceptedTripWrapper: viewState.acceptedTripWrapper.copy(pickedUpTheClient: true , destinationToPickUpLocation: const Direction()));
+      return viewState.copy(acceptedTripWrapper: viewState.acceptedTripWrapper.copy(pickedUpTheClient: true ,reachedPickUpLocation: false , destinationToPickUpLocation: const Direction()));
     } catch(e){
       return viewState.copy(error: e.toString() , acceptedTripWrapper: viewState.acceptedTripWrapper.copy(pickedUpTheClient: false));
     }

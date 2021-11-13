@@ -3,7 +3,7 @@ import 'package:deliver_me_driver/data/user/user_datasource.dart';
 
 class UserDataSourceImp extends UserDataSource{
   @override
-  Stream<User> userData() {
+  Stream<User?> userData() {
     return Stream.value(User(
         id: "kokoDriver",
         name: "kokoDriver",
