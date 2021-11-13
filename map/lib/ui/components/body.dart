@@ -132,8 +132,15 @@ class _BodyState extends State<Body> {
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.easeInOut,
                 decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(10.0), topRight: Radius.circular(10.0)),
-                    color: Colors.white
+                    borderRadius: BorderRadius.only(topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0)),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        blurRadius: 15.0,
+                        offset: Offset(0.0, -2.0)
+                      )
+                    ]
                 ),
                 child: PageView(
                   physics: const NeverScrollableScrollPhysics(),

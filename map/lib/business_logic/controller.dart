@@ -162,12 +162,15 @@ class MapController extends GetxController {
 
   setTheAcceptedTrip(TripData tripData) async {
 
+    print("set trip "+tripData.toString());
+
     viewState.value = viewState.value.copy(
         myLocation: LatLng(tripData.driverLocation!.latitude!, tripData.driverLocation!.longitude!),
         acceptedTripWrapper: viewState.value.acceptedTripWrapper.copy(
             acceptedTrip: tripData,
             pickedUpTheClient: tripData.tripState! != TripStates.driverNotHere
-        )
+        ),
+        openedToExploreTrip: tripData
     );
 
     if (tripData.tripState! == TripStates.driverNotHere){

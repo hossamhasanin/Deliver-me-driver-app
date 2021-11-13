@@ -56,8 +56,13 @@ class TripData extends Equatable {
         encodedPolyLinePoints: doc["encodedPolyLinePoints"],
         pickUpLocation: geoPointToLocationAdapterFunction(doc["pickUpLocationMap"]["geopoint"]),
         dropOffLocation: geoPointToLocationAdapterFunction(doc["dropOffLocation"]),
-        driverLocation: null,
-        driverPersonalData: null,
+        driverLocation:  geoPointToLocationAdapterFunction(doc["driverLocation"]),
+        driverPersonalData: User(
+            id: doc["driverId"],
+            name: doc["driverName"],
+            email: doc["driverEmail"],
+            phone: doc["driverPhone"],
+            img: doc["driverImg"]),
         clintPersonalData: User(
             id: doc["clientId"],
             name: doc["clientName"],

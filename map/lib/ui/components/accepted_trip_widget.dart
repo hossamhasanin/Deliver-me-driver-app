@@ -44,9 +44,9 @@ class AcceptedTrip extends StatelessWidget {
                         const SizedBox(height: 8.0,),
                         Text(
                           !acceptedTrip.reachedPickUpLocation ?
-                          acceptedTrip.acceptedTrip.pickUpAddress! : acceptedTrip.acceptedTrip.destinationAddress!,
+                          "Take me from : "+ acceptedTrip.acceptedTrip.pickUpAddress! : "My destination : "+ acceptedTrip.acceptedTrip.destinationAddress!,
                             style: const TextStyle(
-                              fontSize: 18.0,
+                              fontSize: 15.0,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -74,7 +74,8 @@ class AcceptedTrip extends StatelessWidget {
               },
               child: const Text("Cancel trip"),
               style: ElevatedButton.styleFrom(
-                  primary: Colors.red
+                  primary: Colors.red,
+                  fixedSize: const Size(150.0, 40.0)
               ),
             ) : Container()
           ],

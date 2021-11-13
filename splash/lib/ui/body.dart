@@ -56,7 +56,6 @@ class _BodyState extends State<Body> {
 
   @override
   void dispose() {
-    _controller.dispose();
     worker!.dispose();
     super.dispose();
   }
