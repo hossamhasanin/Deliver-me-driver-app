@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:map/business_logic/controller.dart';
 import 'package:map/ui/components/accepted_trip_widget.dart';
+import 'package:map/ui/components/app_bar.dart';
 import 'package:map/ui/components/trip_detailed_info.dart';
 import 'package:map/business_logic/viewstate.dart';
 
@@ -113,7 +114,7 @@ class _BodyState extends State<Body> {
         Obx((){
 
           if (_mapController.viewState.value.openedToExploreTrip.id != null){
-            _tripInfoBoxHeight = 150.0;
+            _tripInfoBoxHeight = 250.0;
           } else {
             _tripInfoBoxHeight = 0.0;
           }
@@ -131,60 +132,47 @@ class _BodyState extends State<Body> {
                 height: _tripInfoBoxHeight,
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.easeInOut,
-                decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0)),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        blurRadius: 15.0,
-                        offset: Offset(0.0, -2.0)
-                      )
-                    ]
-                ),
+                color: Colors.transparent,
+                padding: const EdgeInsets.only(bottom: 10.0),
                 child: PageView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _pageController,
                   children: [
-                    Stack(
-                      children: [
-                        Positioned(
-                          child: IconButton(
-                            onPressed: (){
-                              _mapController.openTripToExplore(const TripData());
-                            },
-                            icon: const Icon(Icons.cancel_outlined),
-                          ),
-                          top: 10.0,
-                          left: 10.0,
-                        ),
-                        Positioned(
-                          top: 60.0,
-                          left: 10.0,
-                          right: 10.0,
-                          child: TripDetailedInfo(
-                            tripData: _mapController.viewState.value.openedToExploreTrip,
-                            acceptTripAction: (){
-                              _mapController.acceptTrip();
-                            },
-                          ),
-                        )
-                      ],
+                    Align(
+                      child: TripDetailedInfo(
+                        tripData: _mapController.viewState.value.openedToExploreTrip,
+                        acceptTripAction: (){
+                          _mapController.acceptTrip();
+                        },
+                        cancel: (){
+                          _mapController.openTripToExplore(const TripData());
+                        },
+                      ),
+                      alignment: Alignment.bottomCenter,
                     ),
-                    AcceptedTrip(
-                        acceptedTrip: _mapController.viewState.value.acceptedTripWrapper,
-                        cancelTrip: (){
-                          _mapController.cancelTrip();
-                        },
-                        pickUp: (){
-                          _mapController.pickUpTheClient();
-                        },
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: AcceptedTrip(
+                          acceptedTrip: _mapController.viewState.value.acceptedTripWrapper,
+                          cancelTrip: (){
+                            _mapController.cancelTrip();
+                          },
+                          pickUp: (){
+                            _mapController.pickUpTheClient();
+                          },
+                      ),
                     )
                   ],
                 ),
               )
           );
-        })
+        }),
+        Positioned(
+          child: MapAppBar(),
+          top:65.0,
+          left: 0,
+          right: 0,
+        ),
       ],
     );
   }
@@ -198,7 +186,8 @@ class _BodyState extends State<Body> {
       var acceptedRoutePolyLine = Polyline(
           polylineId: const PolylineId("acceptedRoute"),
           points: acceptedRouteTrip,
-          color: Colors.red
+          color: Colors.blue,
+          width: 5
       );
       routes.add(acceptedRoutePolyLine);
 
@@ -221,7 +210,8 @@ class _BodyState extends State<Body> {
       var toPickUpLocationRoutePolyLine = Polyline(
           polylineId: const PolylineId("acceptedRoute"),
           points: toPickUpLocationRouteTrip,
-          color: Colors.orange
+          color: Colors.blue,
+          width: 5
       );
       routes.add(toPickUpLocationRoutePolyLine);
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:map/ui/components/app_drawer.dart';
 import 'package:map/ui/components/body.dart';
 
 class MapScreen extends StatelessWidget {
@@ -8,6 +9,7 @@ class MapScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Body(),
+      drawer: AppDrawer(),
     );
   }
 }

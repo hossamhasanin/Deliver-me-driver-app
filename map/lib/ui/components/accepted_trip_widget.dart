@@ -21,8 +21,13 @@ class AcceptedTrip extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            Container(
+              padding: const EdgeInsets.all(18.0),
+              margin: const EdgeInsets.all(15.0),
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.0)
+              ),
               child: Row(
                 children: [
                   CircleAvatar(

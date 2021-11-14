@@ -71,7 +71,7 @@ class TripData extends Equatable {
             img: doc["clientImg"]),
         tripState: TripStates.values[doc["tripState"]],
         paymentMethod: doc["paymentMethod"],
-        cost: double.parse(doc["cost"].toString(),)
+        cost: doc["cost"] != null ? double.parse(doc["cost"].toString()):null
     );
   }
 
