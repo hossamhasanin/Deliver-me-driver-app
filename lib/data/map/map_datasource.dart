@@ -51,7 +51,7 @@ class MapDataSourceImp extends MapDataSource {
     var user = await _userDataSource.userData().last;
 
     return query.update({
-      "driverLocation" : driverLocation.data,
+      "driverLocation" : driverLocation.geoPoint,
       "driverId": user!.id,
       "driverName": user.name,
       "driverEmail" : user.email,

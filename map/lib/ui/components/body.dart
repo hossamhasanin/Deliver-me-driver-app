@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:base/base.dart';
 import 'package:flutter/material.dart';
@@ -69,111 +70,118 @@ class _BodyState extends State<Body> {
 
     _listenToViewState();
 
-    BitmapDescriptor.fromAssetImage(const ImageConfiguration(devicePixelRatio: 10), "assets/images/automobile.png")
-        .then((value) {
-      myLocationMarker = myLocationMarker.copyWith(iconParam: value);
+    // BitmapDescriptor.fromAssetImage(const ImageConfiguration(devicePixelRatio: 10), "assets/images/automobile.png")
+    //     .then((value) {
+    //   myLocationMarker = myLocationMarker.copyWith(iconParam: value);
+    // });
+
+    getBytesFromAsset('assets/images/automobile.png', 100).then((value) {
+      myLocationMarker = myLocationMarker.copyWith(iconParam: BitmapDescriptor.fromBytes(value));
     });
+
 
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Obx((){
-          mapMarkers.clear();
-          routes.clear();
-
-          displayTripsMarkers();
-
-          displayRouteToPickUpLocation();
-
-          displayMyLocation();
-
-          displayTripData();
-
-          return GoogleMap(
-            mapType: MapType.normal,
-            initialCameraPosition: _kGooglePlex,
-            markers: mapMarkers,
-            polylines: routes,
-            onMapCreated: (GoogleMapController mapController) {
-              _mainMapCompleter.complete(mapController);
-              _googleMapController = mapController;
-
-              TripData? acceptedTripPreviously = Get.arguments;
-              if (acceptedTripPreviously != null) {
-                _mapController.setTheAcceptedTrip(acceptedTripPreviously);
-              }
-              _mapController.listenToTheLocation();
-
-            },
-          );
-        }),
-
-        Obx((){
-
-          if (_mapController.viewState.value.openedToExploreTrip.id != null){
-            _tripInfoBoxHeight = 250.0;
-          } else {
-            _tripInfoBoxHeight = 0.0;
-          }
-
-          if (_mapController.viewState.value.acceptedTripWrapper.acceptedTrip.id != null){
-            _pageController.animateToPage(1, duration: const Duration(seconds: 1), curve: Curves.easeIn);
-          }
-
-          return Positioned(
-              bottom: 0.0,
-              right: 0.0,
-              left: 0.0,
-              child: AnimatedContainer(
-                width: double.infinity,
-                height: _tripInfoBoxHeight,
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeInOut,
-                color: Colors.transparent,
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: PageView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  controller: _pageController,
-                  children: [
-                    Align(
-                      child: TripDetailedInfo(
-                        tripData: _mapController.viewState.value.openedToExploreTrip,
-                        acceptTripAction: (){
-                          _mapController.acceptTrip();
-                        },
-                        cancel: (){
-                          _mapController.openTripToExplore(const TripData());
-                        },
-                      ),
-                      alignment: Alignment.bottomCenter,
-                    ),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: AcceptedTrip(
-                          acceptedTrip: _mapController.viewState.value.acceptedTripWrapper,
-                          cancelTrip: (){
-                            _mapController.cancelTrip();
+    return SafeArea(
+      child: Stack(
+        children: [
+          Obx((){
+            mapMarkers.clear();
+            routes.clear();
+    
+            displayTripsMarkers();
+    
+            displayRouteToPickUpLocation();
+    
+            displayMyLocation();
+    
+            displayTripData();
+    
+            return GoogleMap(
+              mapType: MapType.normal,
+              initialCameraPosition: _kGooglePlex,
+              markers: mapMarkers,
+              polylines: routes,
+              onMapCreated: (GoogleMapController mapController) {
+                _mainMapCompleter.complete(mapController);
+                _googleMapController = mapController;
+    
+                TripData? acceptedTripPreviously = Get.arguments;
+                if (acceptedTripPreviously != null) {
+                  _mapController.setTheAcceptedTrip(acceptedTripPreviously);
+                }
+                _mapController.listenToTheLocation();
+    
+              },
+            );
+          }),
+    
+          Obx((){
+    
+            if (_mapController.viewState.value.openedToExploreTrip.id != null){
+              _tripInfoBoxHeight = 250.0;
+            } else {
+              _tripInfoBoxHeight = 0.0;
+            }
+    
+            if (_mapController.viewState.value.acceptedTripWrapper.acceptedTrip.id != null){
+              _pageController.animateToPage(1, duration: const Duration(seconds: 1), curve: Curves.easeIn);
+            }
+    
+            return Positioned(
+                bottom: 0.0,
+                right: 0.0,
+                left: 0.0,
+                child: AnimatedContainer(
+                  width: double.infinity,
+                  height: _tripInfoBoxHeight,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                  color: Colors.transparent,
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: PageView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    controller: _pageController,
+                    children: [
+                      Align(
+                        child: TripDetailedInfo(
+                          tripData: _mapController.viewState.value.openedToExploreTrip,
+                          acceptTripAction: (){
+                            _mapController.acceptTrip();
                           },
-                          pickUp: (){
-                            _mapController.pickUpTheClient();
+                          cancel: (){
+                            _mapController.openTripToExplore(const TripData());
                           },
+                        ),
+                        alignment: Alignment.bottomCenter,
                       ),
-                    )
-                  ],
-                ),
-              )
-          );
-        }),
-        Positioned(
-          child: MapAppBar(),
-          top:65.0,
-          left: 0,
-          right: 0,
-        ),
-      ],
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: AcceptedTrip(
+                            acceptedTrip: _mapController.viewState.value.acceptedTripWrapper,
+                            cancelTrip: (){
+                              _mapController.cancelTrip();
+                            },
+                            pickUp: (){
+                              _mapController.pickUpTheClient();
+                            },
+                        ),
+                      )
+                    ],
+                  ),
+                )
+            );
+          }),
+          Positioned(
+            child: MapAppBar(),
+            top:0.0,
+            left: 0,
+            right: 0,
+          ),
+        ],
+      ),
     );
   }
 

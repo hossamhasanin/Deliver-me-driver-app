@@ -13,7 +13,7 @@ class SplashUseCase{
       print("koko usecase "+ tripData.toString());
       return eventStreamer.copy(assignedTrip: tripData , done: true);
     }catch(e){
-      print("koko "+ e.toString());
+      print("koko error splash "+ e.toString());
       return eventStreamer.copy(error: e.toString() , done: true);
     }
   }

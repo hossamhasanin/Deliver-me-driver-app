@@ -14,7 +14,7 @@ class MapAppBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(0.5)
+          color: Colors.blue.withOpacity(0.8)
       ),
       child: Row(
         children: [
