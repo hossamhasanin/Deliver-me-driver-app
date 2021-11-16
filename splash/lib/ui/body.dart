@@ -28,7 +28,7 @@ class _BodyState extends State<Body> {
       }
 
       if (!event.isLoggedIn){
-        Get.offNamed(LOGIN_SCREEN);
+        Get.offNamed(AUTH_SCREEN);
       }
     });
 

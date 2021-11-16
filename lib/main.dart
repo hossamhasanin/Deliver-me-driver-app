@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:map/ui/map_screen.dart';
 import 'package:splash/ui/splash_screen.dart';
+import 'package:auth/auth.dart';
 
 import 'dependincies.dart';
 
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
       home: MainApp(),
       getPages: [
         GetPage(name: SPLASH_SCREEN, page: () => const SplashScreen()),
+        GetPage(name: AUTH_SCREEN, page: () => const AuthScreen()),
         GetPage(name: MAP_SCREEN, page: () => const MapScreen()),
       ],
     );

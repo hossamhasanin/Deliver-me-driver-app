@@ -1,0 +1,6 @@
+enum ValidationErrors{
+  NONE,
+
+  EMAIL_NOT_VALID , EMAIL_EMPTY ,
+  PASSWORD_SHORT , PASSWORD_EMPTY
+}

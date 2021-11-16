@@ -293,7 +293,7 @@ class _BodyState extends State<Body> {
                   width: 300.0,
                   child: Column(
                     children: [
-                      const Text("The trip has ended"),
+                      Text("The trip has ended , $message"),
                       ElevatedButton(
                           onPressed: (){
                             Navigator.pop(dialogOverlayContext!);
