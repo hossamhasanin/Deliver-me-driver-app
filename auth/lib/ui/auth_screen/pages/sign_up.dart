@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auth/business_logic/signup/register/register_controller.dart';
+import 'package:auth/business_logic/validation_errors.dart';
 import 'package:auth/ui/auth_screen/theme.dart';
 import 'package:auth/ui/auth_screen/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
@@ -52,8 +53,48 @@ class _SignUpState extends State<SignUp> {
   void initState() {
     super.initState();
 
+    _controller.listenToEvents();
 
     viewStateListener = _controller.viewState.stream.distinct().listen((viewstate) {
+      print("koko signup loading"+viewstate.loading.toString());
+      if (viewstate.loading){
+        dialogOverlayContext = Get.context;
+        showDialog(context: dialogOverlayContext!, builder: (_){
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            child: SizedBox(
+              height: 300.0,
+              width: 300.0,
+              child: Row(
+                children: const [
+                  Text("Wait ..."),
+                  SizedBox(width: 10.0,),
+                  CircularProgressIndicator()
+                ],
+              ),
+            ),
+          );
+        } , barrierDismissible: false);
+      } else {
+        if (dialogOverlayContext != null){
+          Navigator.pop(dialogOverlayContext!);
+          dialogOverlayContext = null;
+        }
+      }
+
+      if (viewstate.error != ""){
+        showDialog(context: context, builder: (_){
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            child: SizedBox(
+              height: 300.0,
+              width: 300.0,
+              child: Text(viewstate.error),
+            ),
+          );
+        });
+      }
+
       if (viewstate.done){
         dialogOverlayContext = Get.overlayContext;
         showDialog(context: dialogOverlayContext!, builder: (_){
@@ -77,43 +118,6 @@ class _SignUpState extends State<SignUp> {
           );
         } , barrierDismissible: false);
       }
-
-      if (viewstate.loading){
-        dialogOverlayContext = Get.overlayContext;
-        showDialog(context: dialogOverlayContext!, builder: (_){
-          return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-            child: SizedBox(
-              height: 300.0,
-              width: 300.0,
-              child: Row(
-                children: const [
-                  Text("Wait ..."),
-                  SizedBox(width: 10.0,),
-                  CircularProgressIndicator()
-                ],
-              ),
-            ),
-          );
-        } , barrierDismissible: false);
-      } else {
-        if (dialogOverlayContext != null){
-          Navigator.pop(dialogOverlayContext!);
-        }
-      }
-
-      if (viewstate.error != ""){
-        showDialog(context: context, builder: (_){
-          return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-            child: SizedBox(
-              height: 300.0,
-              width: 300.0,
-              child: Text(viewstate.error),
-            ),
-          );
-        });
-      }
     });
 
   }
@@ -136,154 +140,181 @@ class _SignUpState extends State<SignUp> {
                 child: Container(
                   width: 300.0,
                   height: 360.0,
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
-                        child: TextField(
-                          focusNode: focusNodeName,
-                          controller: signupNameController,
-                          keyboardType: TextInputType.text,
-                          textCapitalization: TextCapitalization.words,
-                          autocorrect: false,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            icon: Icon(
-                              FontAwesomeIcons.user,
-                              color: Colors.black,
-                            ),
-                            hintText: 'Name',
-                            hintStyle: TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                          child: Obx((){
+                              return TextField(
+                                focusNode: focusNodeName,
+                                controller: signupNameController,
+                                keyboardType: TextInputType.text,
+                                textCapitalization: TextCapitalization.words,
+                                autocorrect: false,
+                                style: const TextStyle(
+                                    fontFamily: 'WorkSansSemiBold',
+                                    fontSize: 16.0,
+                                    color: Colors.black),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  icon: const Icon(
+                                    FontAwesomeIcons.user,
+                                    color: Colors.black,
+                                  ),
+                                  hintText: 'Name',
+                                  hintStyle: const TextStyle(
+                                      fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                                  errorText: _viewNameErrorMessage(_controller.viewState.value.nameError)
+                                ),
+                                onSubmitted: (_) {
+                                  focusNodeEmail.requestFocus();
+                                },
+                                onChanged: (text){
+                                  _controller.enterName(text);
+                                },
+                              );
+                            }
                           ),
-                          onSubmitted: (_) {
-                            focusNodeEmail.requestFocus();
-                          },
                         ),
-                      ),
-                      Container(
-                        width: 250.0,
-                        height: 1.0,
-                        color: Colors.grey[400],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
-                        child: TextField(
-                          focusNode: focusNodeEmail,
-                          controller: signupEmailController,
-                          keyboardType: TextInputType.emailAddress,
-                          autocorrect: false,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            icon: Icon(
-                              FontAwesomeIcons.envelope,
-                              color: Colors.black,
-                            ),
-                            hintText: 'Email Address',
-                            hintStyle: TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                        Container(
+                          width: 250.0,
+                          height: 1.0,
+                          color: Colors.grey[400],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                          child: Obx(() {
+                              return TextField(
+                                focusNode: focusNodeEmail,
+                                controller: signupEmailController,
+                                keyboardType: TextInputType.emailAddress,
+                                autocorrect: false,
+                                style: const TextStyle(
+                                    fontFamily: 'WorkSansSemiBold',
+                                    fontSize: 16.0,
+                                    color: Colors.black),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  icon: const Icon(
+                                    FontAwesomeIcons.envelope,
+                                    color: Colors.black,
+                                  ),
+                                  hintText: 'Email Address',
+                                  hintStyle: const TextStyle(
+                                      fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                                  errorText: _viewEmailErrorMessage(_controller.viewState.value.emailError)
+                                ),
+                                onSubmitted: (_) {
+                                  focusNodePassword.requestFocus();
+                                },
+                                onChanged: (text){
+                                  _controller.enterEmail(text);
+                                },
+                              );
+                            }
                           ),
-                          onSubmitted: (_) {
-                            focusNodePassword.requestFocus();
-                          },
                         ),
-                      ),
-                      Container(
-                        width: 250.0,
-                        height: 1.0,
-                        color: Colors.grey[400],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
-                        child: TextField(
-                          focusNode: focusNodePassword,
-                          controller: signupPasswordController,
-                          obscureText: _obscureTextPassword,
-                          autocorrect: false,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            icon: const Icon(
-                              FontAwesomeIcons.lock,
-                              color: Colors.black,
-                            ),
-                            hintText: 'Password',
-                            hintStyle: const TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                            suffixIcon: GestureDetector(
-                              onTap: _toggleSignup,
-                              child: Icon(
-                                _obscureTextPassword
-                                    ? FontAwesomeIcons.eye
-                                    : FontAwesomeIcons.eyeSlash,
-                                size: 15.0,
-                                color: Colors.black,
-                              ),
-                            ),
+                        Container(
+                          width: 250.0,
+                          height: 1.0,
+                          color: Colors.grey[400],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                          child: Obx(() {
+                              return TextField(
+                                focusNode: focusNodePassword,
+                                controller: signupPasswordController,
+                                obscureText: _obscureTextPassword,
+                                autocorrect: false,
+                                style: const TextStyle(
+                                    fontFamily: 'WorkSansSemiBold',
+                                    fontSize: 16.0,
+                                    color: Colors.black),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  icon: const Icon(
+                                    FontAwesomeIcons.lock,
+                                    color: Colors.black,
+                                  ),
+                                  hintText: 'Password',
+                                  hintStyle: const TextStyle(
+                                      fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                                  errorText: _viewPasswordErrorMessage(_controller.viewState.value.passwordError),
+                                  suffixIcon: GestureDetector(
+                                    onTap: _toggleSignup,
+                                    child: Icon(
+                                      _obscureTextPassword
+                                          ? FontAwesomeIcons.eye
+                                          : FontAwesomeIcons.eyeSlash,
+                                      size: 15.0,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                onSubmitted: (_) {
+                                  focusNodeConfirmPassword.requestFocus();
+                                },
+                                onChanged: (text){
+                                  _controller.enterPassword(text);
+                                },
+                              );
+                            }
                           ),
-                          onSubmitted: (_) {
-                            focusNodeConfirmPassword.requestFocus();
-                          },
                         ),
-                      ),
-                      Container(
-                        width: 250.0,
-                        height: 1.0,
-                        color: Colors.grey[400],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
-                        child: TextField(
-                          focusNode: focusNodeConfirmPassword,
-                          controller: signupConfirmPasswordController,
-                          obscureText: _obscureTextConfirmPassword,
-                          autocorrect: false,
-                          style: const TextStyle(
-                              fontFamily: 'WorkSansSemiBold',
-                              fontSize: 16.0,
-                              color: Colors.black),
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            icon: const Icon(
-                              FontAwesomeIcons.lock,
-                              color: Colors.black,
-                            ),
-                            hintText: 'Confirmation',
-                            hintStyle: const TextStyle(
-                                fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                            suffixIcon: GestureDetector(
-                              onTap: _toggleSignupConfirm,
-                              child: Icon(
-                                _obscureTextConfirmPassword
-                                    ? FontAwesomeIcons.eye
-                                    : FontAwesomeIcons.eyeSlash,
-                                size: 15.0,
-                                color: Colors.black,
-                              ),
-                            ),
+                        Container(
+                          width: 250.0,
+                          height: 1.0,
+                          color: Colors.grey[400],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                          child: Obx((){
+                              return TextField(
+                                focusNode: focusNodeConfirmPassword,
+                                controller: signupConfirmPasswordController,
+                                obscureText: _obscureTextConfirmPassword,
+                                autocorrect: false,
+                                style: const TextStyle(
+                                    fontFamily: 'WorkSansSemiBold',
+                                    fontSize: 16.0,
+                                    color: Colors.black),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  icon: const Icon(
+                                    FontAwesomeIcons.lock,
+                                    color: Colors.black,
+                                  ),
+                                  hintText: 'Confirmation',
+                                  hintStyle: const TextStyle(
+                                      fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                                  errorText: _viewPasswordConfirmErrorMessage(_controller.viewState.value.passwordConfirmError),
+                                  suffixIcon: GestureDetector(
+                                    onTap: _toggleSignupConfirm,
+                                    child: Icon(
+                                      _obscureTextConfirmPassword
+                                          ? FontAwesomeIcons.eye
+                                          : FontAwesomeIcons.eyeSlash,
+                                      size: 15.0,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                onChanged: (text){
+                                  _controller.enterPasswordConfirm(text);
+                                },
+                                textInputAction: TextInputAction.go,
+                              );
+                            }
                           ),
-                          onSubmitted: (_) {
-                            _toggleSignUpButton();
-                          },
-                          textInputAction: TextInputAction.go,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -328,7 +359,9 @@ class _SignUpState extends State<SignUp> {
                           fontFamily: 'WorkSansBold'),
                     ),
                   ),
-                  onPressed: () => _toggleSignUpButton(),
+                  onPressed: () {
+                    _controller.register();
+                  },
                 ),
               )
             ],
@@ -338,8 +371,55 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  void _toggleSignUpButton() {
-    CustomSnackBar(context, const Text('SignUp button pressed'));
+  String? _viewEmailErrorMessage(ValidationErrors emailError){
+    switch(emailError){
+      case ValidationErrors.EMAIL_NOT_VALID :{
+        return "Email not valid";
+      }
+      case ValidationErrors.EMAIL_EMPTY:{
+        return "Email is empty";
+      }
+      default: {
+        return null;
+      }
+    }
+  }
+
+  String? _viewNameErrorMessage(ValidationErrors nameError){
+    switch(nameError){
+      case ValidationErrors.NAME_EMPTY :{
+        return "Name is empty";
+      }
+      default: {
+        return null;
+      }
+    }
+  }
+
+  String? _viewPasswordErrorMessage(ValidationErrors passwordError){
+    switch(passwordError){
+      case ValidationErrors.PASSWORD_EMPTY :{
+        return "Password is empty";
+      }
+      case ValidationErrors.PASSWORD_SHORT:{
+        return "Password is short";
+      }
+      default: {
+        return null;
+      }
+    }
+  }
+
+  String? _viewPasswordConfirmErrorMessage(ValidationErrors passwordConfirmError){
+    switch(passwordConfirmError){
+      case ValidationErrors.PASSWORDS_DIFFERENT :{
+        return "Passwords doesn't match";
+      }
+
+      default: {
+        return null;
+      }
+    }
   }
 
   void _toggleSignup() {

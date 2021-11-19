@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auth/business_logic/login/events.dart';
 import 'package:auth/business_logic/login/login_datasource.dart';
 import 'package:auth/business_logic/login/login_event_carrier.dart';
 import 'package:auth/business_logic/login/usecase.dart';
@@ -16,17 +17,18 @@ class LoginController extends GetxController{
       error: "",
       successfulLogin: false,
       emailError: ValidationErrors.NONE,
-      passwordError: ValidationErrors.NONE
+      passwordError: ValidationErrors.NONE,
+      fillAccountData: false,
+      isEmailNotVerified: false
   ).obs;
 
   LoginEventCarrier _eventCarrier = LoginEventCarrier(
     email: "",
-    password: "",
-    login: false
+    password: ""
   );
 
   StreamSubscription? _eventCarrierListener;
-  final StreamController<LoginEventCarrier> _eventsStream = StreamController();
+  final StreamController<Events> _eventsStream = StreamController();
 
 
 
@@ -36,13 +38,13 @@ class LoginController extends GetxController{
 
   listenToEvents(){
     _eventCarrierListener = _eventsStream.stream.distinct().listen((event) {
-      if (event.email != _eventCarrier.email){
+      if (event is EnterEmail){
         // validate the email
         _validateEmail(event.email);
-      } else if (event.password != _eventCarrier.password){
+      } else if (event is EnterPassword){
         // validate the password
         _validatePassword(event.password);
-      } else if (event.login != _eventCarrier.login){
+      } else if (event is Login){
         // do login process
         _login();
       }
@@ -50,15 +52,15 @@ class LoginController extends GetxController{
   }
 
   login() async {
-    _eventsStream.add(_eventCarrier.copy(login: true));
+    _eventsStream.add(Login());
   }
 
   enterEmail(String email){
-    _eventsStream.add(_eventCarrier.copy(email: email));
+    _eventsStream.add(EnterEmail(email));
   }
 
   enterPassword(String password){
-    _eventsStream.add(_eventCarrier.copy(password: password));
+    _eventsStream.add(EnterPassword(password));
   }
 
   _validateEmail(String email){
@@ -80,12 +82,25 @@ class LoginController extends GetxController{
   }
 
   _login() async {
+    if (viewState.value.passwordError != ValidationErrors.NONE || viewState.value.emailError != ValidationErrors.NONE){
+      _updateViewState(viewState.value.copy(error: "Correct the input errors first"));
+      resetViewState();
+      return;
+    }
     _updateViewState(viewState.value.copy(loading: true));
     _updateViewState(await _useCase.login(viewState.value, _eventCarrier.email, _eventCarrier.password));
+    resetViewState();
   }
 
   _updateViewState(LoginViewState loginViewState){
     viewState.value = loginViewState;
+  }
+
+  resetViewState(){
+    viewState.value = viewState.value.copy(
+      isEmailNotVerified: false,
+      error: ""
+    );
   }
 
   @override

@@ -1,4 +1,5 @@
 import 'package:base/base.dart';
+import 'package:deliver_me_driver/data/user/user_datasource.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,7 +15,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
+  
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,13 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: SPLASH_SCREEN, page: () => const SplashScreen()),
         GetPage(name: AUTH_SCREEN, page: () => const AuthScreen()),
-        GetPage(name: MAP_SCREEN, page: () => const MapScreen()),
+        GetPage(name: MAP_SCREEN, page: () => Builder(
+          builder: (context) {
+            UserDataSource _userDatasource = Get.find();
+            _userDatasource.listenToUserData();
+            return const MapScreen();
+          }
+        )),
       ],
     );
   }

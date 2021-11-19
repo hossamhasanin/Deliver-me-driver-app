@@ -5,6 +5,7 @@ import 'package:auth/business_logic/login/viewstate.dart';
 import 'package:auth/business_logic/validation_errors.dart';
 import 'package:auth/ui/auth_screen/theme.dart';
 import 'package:auth/ui/auth_screen/widgets/snackbar.dart';
+import 'package:auth/ui/fill_account_data/fill_account_data_screen.dart';
 import 'package:base/base.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -49,6 +50,32 @@ class _SignInState extends State<SignIn> {
     _controller.listenToEvents();
 
     viewStateListener = _controller.viewState.stream.distinct().listen((viewstate) {
+
+      if (viewstate.loading){
+        dialogOverlayContext = Get.overlayContext;
+        showDialog(context: dialogOverlayContext!, builder: (_){
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            child: SizedBox(
+              height: 300.0,
+              width: 300.0,
+              child: Row(
+                children: const [
+                  Text("Wait ..."),
+                  SizedBox(width: 10.0,),
+                  CircularProgressIndicator()
+                ],
+              ),
+            ),
+          );
+        } , barrierDismissible: true);
+      } else {
+        if (dialogOverlayContext != null){
+          Navigator.pop(dialogOverlayContext!);
+          dialogOverlayContext = null;
+        }
+      }
+
       if (viewstate.successfulLogin){
         dialogOverlayContext = Get.overlayContext;
         showDialog(context: dialogOverlayContext!, builder: (_){
@@ -73,7 +100,7 @@ class _SignInState extends State<SignIn> {
         } , barrierDismissible: false);
       }
 
-      if (viewstate.loading){
+      if (viewstate.fillAccountData){
         dialogOverlayContext = Get.overlayContext;
         showDialog(context: dialogOverlayContext!, builder: (_){
           return Dialog(
@@ -81,21 +108,36 @@ class _SignInState extends State<SignIn> {
             child: SizedBox(
               height: 300.0,
               width: 300.0,
-              child: Row(
-                children: const [
-                  Text("Wait ..."),
-                  SizedBox(width: 10.0,),
-                  CircularProgressIndicator()
+              child: Column(
+                children: [
+                  const Text("You have verified the email now finish your account data"),
+                  ElevatedButton(
+                      onPressed: (){
+                        Navigator.pop(dialogOverlayContext!);
+                        Get.off(const FillAccountDataScreen());
+                        dialogOverlayContext = null;
+                      }, child: const Text("Get there now"))
                 ],
               ),
             ),
           );
         } , barrierDismissible: false);
-      } else {
-        if (dialogOverlayContext != null){
-          Navigator.pop(dialogOverlayContext!);
-        }
       }
+
+      if (viewstate.isEmailNotVerified){
+        showDialog(context: context, builder: (_){
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            child: const SizedBox(
+              height: 300.0,
+              width: 300.0,
+              child: Text("You have to verify the email first"),
+            ),
+          );
+        });
+      }
+
+
 
       if (viewstate.error != ""){
         showDialog(context: context, builder: (_){
@@ -135,7 +177,7 @@ class _SignInState extends State<SignIn> {
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
+                            top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
                         child: Obx(() {
                             return TextField(
                               focusNode: focusNodeEmail,
@@ -174,7 +216,7 @@ class _SignInState extends State<SignIn> {
                       ),
                       Padding(
                         padding: const EdgeInsets.only(
-                            top: 20.0, bottom: 20.0, left: 25.0, right: 25.0),
+                            top: 10.0, bottom: 20.0, left: 25.0, right: 25.0),
                         child: Obx((){
                             return TextField(
                               focusNode: focusNodePassword,
@@ -204,11 +246,14 @@ class _SignInState extends State<SignIn> {
                                     color: Colors.black,
                                   ),
                                 ),
-                                
+
                                 errorText: _viewPasswordErrorMessage(_controller.viewState.value.passwordError)
                               ),
                               onSubmitted: (_) {
                                 _toggleSignInButton();
+                              },
+                              onChanged: (text){
+                                _controller.enterPassword(text);
                               },
                               textInputAction: TextInputAction.go,
                             );
@@ -263,7 +308,6 @@ class _SignInState extends State<SignIn> {
                     _controller.login();
                   }),
                 ),
-              )
             ],
           ),
           Padding(

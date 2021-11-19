@@ -25,6 +25,38 @@ class InputsValidationUseCase{
     }
     return ValidationErrors.NONE;
   }
+
+  ValidationErrors validateName(String name){
+     if (name.isEmpty){
+        return ValidationErrors.NAME_EMPTY;
+     }
+
+     return ValidationErrors.NONE;
+  }
+
+  ValidationErrors validatePasswordConfirm(String passwordConfirm , String password){
+     if (password.isEmpty){
+        return ValidationErrors.PASSWORD_EMPTY;
+     }
+
+     if (password != passwordConfirm){
+       return ValidationErrors.PASSWORDS_DIFFERENT;
+     }
+
+     return ValidationErrors.NONE;
+  }
+
+  ValidationErrors validatePhone(String phone){
+     if (phone.isEmpty){
+        return ValidationErrors.PHONE_EMPTY;
+     }
+
+     if (phone.length < 5){
+       return ValidationErrors.PHONE_NOT_VALID;
+     }
+
+     return ValidationErrors.NONE;
+  }
   
   
 }

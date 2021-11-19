@@ -29,6 +29,9 @@ dependencies:
   cupertino_icons: ^1.0.2
   font_awesome_flutter:
   get:
+  equatable:
+  image_picker:
+
 
   base:
     path: ../base

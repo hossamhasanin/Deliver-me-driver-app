@@ -9,8 +9,11 @@ class LoginUseCase{
 
   Future<LoginViewState> login(LoginViewState viewState , String email , String password) async {
     try{
+      print("koko "+email+" "+password);
       await _loginDataSource.login(email, password);
-      return viewState.copy(loading: false , successfulLogin: true , error: "");
+      var isEmailVerified = await _loginDataSource.isEmailVerified();
+      var doesAccountExist = await _loginDataSource.isUserInDatabase();
+      return viewState.copy(loading: false ,isEmailNotVerified: !isEmailVerified , successfulLogin: isEmailVerified && doesAccountExist , fillAccountData: isEmailVerified && !doesAccountExist , error: "");
     } catch(e) {
       print("koko login error : "+e.toString());
       return viewState.copy(error: e.toString() , loading: false);

@@ -15,7 +15,7 @@ class SplashDataSourceImp implements SplashDataSource{
 
   @override
   Future<TripData?> isThereAssignedTrip() async {
-    var query = _firestore.collection(ASSIGN_CAR).where("driverId" , isEqualTo: (await _userProvider.userData().last)!.id).where("tripState" , isLessThan: TripStates.endTrip.index);
+    var query = _firestore.collection(ASSIGN_CAR).where("driverId" , isEqualTo: _userProvider.user!.id).where("tripState" , isLessThan: TripStates.endTrip.index);
 
     var request = await query.get();
 
@@ -33,7 +33,7 @@ class SplashDataSourceImp implements SplashDataSource{
 
   @override
   Future<bool> isLoggedIn() async {
-    return (await _userProvider.userData().last) != null;
+    return _userProvider.isLoggedIn();
   }
 
 }

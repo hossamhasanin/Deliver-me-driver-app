@@ -1,23 +1,19 @@
 class LoginEventCarrier{
   final String email;
   final String password;
-  final bool login;
 
   LoginEventCarrier({
     required this.email,
-    required this.password,
-    required this.login
+    required this.password
   });
 
   LoginEventCarrier copy({
     String? email,
-    String? password,
-    bool? login
+    String? password
   }){
     return LoginEventCarrier(
       email: email ?? this.email,
-      password: password ?? this.password,
-      login: login ?? this.login
+      password: password ?? this.password
     );
   }
 

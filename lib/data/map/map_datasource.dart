@@ -48,7 +48,7 @@ class MapDataSourceImp extends MapDataSource {
     var query = _firestore.collection(ASSIGN_CAR).doc(trip.id);
     GeoFirePoint driverLocation = geo.point(latitude: location.latitude!, longitude: location.longitude!);
 
-    var user = await _userDataSource.userData().last;
+    var user = _userDataSource.user;
 
     return query.update({
       "driverLocation" : driverLocation.geoPoint,
