@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:base/base.dart';
 import 'package:deliver_me_driver/data/user/user_datasource.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,6 +9,8 @@ import 'package:map/ui/map_screen.dart';
 import 'package:splash/ui/splash_screen.dart';
 import 'package:auth/auth.dart';
 
+
+import 'connection_status_sigleton.dart';
 import 'dependincies.dart';
 
 void main() {

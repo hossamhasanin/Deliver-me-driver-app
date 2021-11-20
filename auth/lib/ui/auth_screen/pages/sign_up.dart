@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:auth/business_logic/signup/register/busuness_logic_events.dart';
 import 'package:auth/business_logic/signup/register/register_controller.dart';
 import 'package:auth/business_logic/validation_errors.dart';
 import 'package:auth/ui/auth_screen/theme.dart';
 import 'package:auth/ui/auth_screen/widgets/snackbar.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -35,7 +37,7 @@ class _SignUpState extends State<SignUp> {
 
   BuildContext? dialogOverlayContext;
 
-  StreamSubscription? viewStateListener;
+  StreamSubscription<BusinessLogicEvents>? businessLogicEventsListener;
 
 
   @override
@@ -45,7 +47,7 @@ class _SignUpState extends State<SignUp> {
     focusNodeEmail.dispose();
     focusNodeName.dispose();
 
-    viewStateListener!.cancel();
+    businessLogicEventsListener!.cancel();
     super.dispose();
   }
 
@@ -55,9 +57,13 @@ class _SignUpState extends State<SignUp> {
 
     _controller.listenToEvents();
 
-    viewStateListener = _controller.viewState.stream.distinct().listen((viewstate) {
-      print("koko signup loading"+viewstate.loading.toString());
-      if (viewstate.loading){
+    businessLogicEventsListener = _controller.businessLogicEventStream.distinct().listen((event) {
+      if (dialogOverlayContext != null){
+        Navigator.pop(dialogOverlayContext!);
+        dialogOverlayContext = null;
+      }
+
+      if (event is ShowLoadingDialog){
         dialogOverlayContext = Get.context;
         showDialog(context: dialogOverlayContext!, builder: (_){
           return Dialog(
@@ -65,37 +71,39 @@ class _SignUpState extends State<SignUp> {
             child: SizedBox(
               height: 300.0,
               width: 300.0,
-              child: Row(
-                children: const [
-                  Text("Wait ..."),
-                  SizedBox(width: 10.0,),
-                  CircularProgressIndicator()
-                ],
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: Row(
+                    children: const [
+                      Text("Wait ..."),
+                      SizedBox(width: 10.0,),
+                      CircularProgressIndicator()
+                    ],
+                  ),
+                ),
               ),
             ),
           );
         } , barrierDismissible: false);
-      } else {
-        if (dialogOverlayContext != null){
-          Navigator.pop(dialogOverlayContext!);
-          dialogOverlayContext = null;
-        }
       }
 
-      if (viewstate.error != ""){
-        showDialog(context: context, builder: (_){
+      if (event is ShowErrorDialog){
+        dialogOverlayContext = Get.overlayContext;
+        showDialog(context: dialogOverlayContext!, builder: (_){
           return Dialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
             child: SizedBox(
               height: 300.0,
               width: 300.0,
-              child: Text(viewstate.error),
+              child: Center(child: Text(_viewSignUpErrorMessage(event.error) ,
+                  style: const TextStyle(fontWeight: FontWeight.bold , fontSize: 18.0))),
             ),
           );
         });
       }
 
-      if (viewstate.done){
+      if (event is ShowDoneRegistrationDialog){
         dialogOverlayContext = Get.overlayContext;
         showDialog(context: dialogOverlayContext!, builder: (_){
           return Dialog(
@@ -104,9 +112,11 @@ class _SignUpState extends State<SignUp> {
               height: 300.0,
               width: 300.0,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text("Created account successfully , the activation email sent to you "
                       " activate the email then login please"),
+                  const SizedBox(height: 20.0,),
                   ElevatedButton(
                       onPressed: (){
                         Navigator.pop(dialogOverlayContext!);
@@ -418,6 +428,32 @@ class _SignUpState extends State<SignUp> {
 
       default: {
         return null;
+      }
+    }
+  }
+
+  String _viewSignUpErrorMessage(String errorCode){
+    switch(errorCode){
+      case "email-already-in-use":{
+        return "Your email is already in use";
+      }
+      case "invalid-email":{
+        return "This is not a valid email buddy";
+      }
+      case "operation-not-allowed":{
+        return "Sorry for now signing up with email and password is not available";
+      }
+      case "weak-password":{
+        return "Your password is very weak";
+      }
+      case "network-request-failed":{
+        return "No internet";
+      }
+      case "invalid-inputs":{
+        return "Correct the input errors first";
+      }
+      default:{
+        throw "Error code not defined";
       }
     }
   }

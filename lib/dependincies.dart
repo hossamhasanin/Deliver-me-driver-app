@@ -3,6 +3,7 @@ import 'package:auth/business_logic/login/login_datasource.dart';
 import 'package:auth/business_logic/signup/fill_account_data/controller.dart';
 import 'package:auth/business_logic/signup/register/register_controller.dart';
 import 'package:auth/business_logic/signup/signup_datasource.dart';
+import 'package:deliver_me_driver/connection_status_sigleton.dart';
 import 'package:deliver_me_driver/data/auth/login/login_datasource_imp.dart';
 import 'package:deliver_me_driver/data/auth/signup/sign_up_datasource_imp.dart';
 import 'package:deliver_me_driver/data/map/location_datasource.dart';

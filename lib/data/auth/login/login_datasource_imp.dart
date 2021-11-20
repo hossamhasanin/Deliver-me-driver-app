@@ -1,6 +1,7 @@
 import 'package:auth/business_logic/login/login_datasource.dart';
 import 'package:base/base.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:deliver_me_driver/connection_status_sigleton.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -16,8 +17,14 @@ class LoginDataSourceImp implements LoginDataSource{
   }
 
   @override
-  Future login(String email, String password) {
-    return _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+  Future login(String email, String password) async {
+    try{
+      await _firebaseAuth.signInWithEmailAndPassword(
+          email: email, password: password);
+    } on FirebaseAuthException catch(e){
+      print("koko login data error "+e.code);
+      throw AuthException(e.code, e.message);
+    }
   }
 
   @override

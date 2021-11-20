@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:auth/business_logic/signup/fill_account_data/busuness_logic_events.dart';
 import 'package:auth/business_logic/signup/fill_account_data/event_data_carrier.dart';
 import 'package:auth/business_logic/signup/fill_account_data/events.dart';
 import 'package:auth/business_logic/signup/fill_account_data/usecase.dart';
@@ -16,9 +17,6 @@ import 'package:get/get.dart';
 class FillAccountDataController extends GetxController{
 
   final Rx<FillAccountDataViewState> viewState = FillAccountDataViewState(
-      loading: false,
-      error: "",
-      done: false,
       showImage: false,
       phoneError: ValidationErrors.NONE
   ).obs;
@@ -26,7 +24,11 @@ class FillAccountDataController extends GetxController{
   late final FillAccountDataUseCase _useCase;
   final InputsValidationUseCase _validationUseCase = InputsValidationUseCase();
   
-  final StreamController<Event> _eventStream = StreamController();
+  final StreamController<Event> _eventStream = StreamController.broadcast();
+  final StreamController<BusinessLogicEvents> _businessLogicEvents = StreamController.broadcast();
+
+  Stream<BusinessLogicEvents> get businessLogicEventsStream  => _businessLogicEvents.stream;
+
   StreamSubscription? _eventListener;
   
   FillAccountDataController(SignupDataSource dataSource){
@@ -64,11 +66,11 @@ class FillAccountDataController extends GetxController{
   }
 
   _upload(File image) async {
-    _updateViewState(viewState.value.copy(loading: true));
+    _businessLogicEvents.add(ShowLoadingDialog());
     var results = await _useCase.uploadImage(viewState.value, image);
-    _updateViewState(results[0] as FillAccountDataViewState);
-    resetViewState();
+    _businessLogicEvents.add(results[0] as DoneLoadingTheImageDialog);
     eventDataCarrier = eventDataCarrier.copy(photo: image , photoUrl: results[1] as String);
+    _updateViewState(results[2] as FillAccountDataViewState);
   }
   
   _enterPhone(String phone){
@@ -79,22 +81,15 @@ class FillAccountDataController extends GetxController{
   
   _fillAccountData() async {
     if (viewState.value.phoneError != ValidationErrors.NONE){
-      _updateViewState(viewState.value.copy(error: "Correct the inputs first"));
-      resetViewState();
+      _businessLogicEvents.add(const ShowErrorDialog("invalid-inputs"));
+      return;
     }
-    _updateViewState(viewState.value.copy(loading: true));
-    _updateViewState(await _useCase.fillData(viewState.value, eventDataCarrier.phone , eventDataCarrier.photoUrl));
-    resetViewState();
+    _businessLogicEvents.add(ShowLoadingDialog());
+    _businessLogicEvents.add(await _useCase.fillData(eventDataCarrier.phone , eventDataCarrier.photoUrl));
   }
   
   _updateViewState(FillAccountDataViewState newState){
     viewState.value = newState;
-  }
-
-  resetViewState(){
-    viewState.value = viewState.value.copy(
-        error: ""
-    );
   }
 
 }

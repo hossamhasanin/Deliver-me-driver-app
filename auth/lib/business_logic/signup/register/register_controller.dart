@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auth/business_logic/signup/register/busuness_logic_events.dart';
 import 'package:auth/business_logic/signup/register/events.dart';
 import 'package:auth/business_logic/signup/register/register_event_carrier.dart';
 import 'package:auth/business_logic/signup/register/register_viewstate.dart';
@@ -12,9 +13,6 @@ import 'package:get/get.dart';
 class RegisterController extends GetxController{
 
   final Rx<RegisterViewState> viewState = RegisterViewState(
-      loading: false,
-      error: "",
-      done: false,
       emailError: ValidationErrors.NONE,
       passwordError: ValidationErrors.NONE,
       passwordConfirmError: ValidationErrors.NONE,
@@ -31,7 +29,11 @@ class RegisterController extends GetxController{
   late final RegisterUseCase _useCase;
   final InputsValidationUseCase _validationUseCase = InputsValidationUseCase();
 
-  final StreamController<Events> _eventStream = StreamController();
+  final StreamController<Events> _eventStream = StreamController.broadcast();
+  final StreamController<BusinessLogicEvents> _businessLogicEvents = StreamController.broadcast();
+
+  Stream<BusinessLogicEvents> get businessLogicEventStream => _businessLogicEvents.stream;
+
   StreamSubscription? _eventListener;
   
   RegisterController(SignupDataSource dataSource){
@@ -99,8 +101,17 @@ class RegisterController extends GetxController{
   }
 
   _register() async {
-    _updateViewState(viewState.value.copy(loading: true));
-    _updateViewState(await _useCase.register(viewState.value, _eventCarrier.email, _eventCarrier.password));
+      if (viewState.value.emailError != ValidationErrors.NONE ||
+        viewState.value.nameError != ValidationErrors.NONE ||
+        viewState.value.passwordError != ValidationErrors.NONE ||
+        viewState.value.passwordConfirmError != ValidationErrors.NONE
+      ){
+        _businessLogicEvents.add(const ShowErrorDialog("invalid-inputs"));
+        return;
+      }
+
+      _businessLogicEvents.add(ShowLoadingDialog());
+      _businessLogicEvents.add(await _useCase.register(_eventCarrier.email, _eventCarrier.password));
   }
   
   _updateViewState(RegisterViewState newState){

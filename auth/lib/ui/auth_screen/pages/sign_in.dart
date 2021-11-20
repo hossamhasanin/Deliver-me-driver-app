@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auth/business_logic/login/busuness_logic_events.dart';
 import 'package:auth/business_logic/login/controller.dart';
 import 'package:auth/business_logic/login/viewstate.dart';
 import 'package:auth/business_logic/validation_errors.dart';
@@ -32,14 +33,14 @@ class _SignInState extends State<SignIn> {
 
   BuildContext? dialogOverlayContext;
 
-  StreamSubscription<LoginViewState>? viewStateListener;
+  StreamSubscription<BusinessLogicEvents>? businessLogicEventsListener;
 
   @override
   void dispose() {
     focusNodeEmail.dispose();
     focusNodePassword.dispose();
 
-    viewStateListener!.cancel();
+    businessLogicEventsListener?.cancel();
     super.dispose();
   }
 
@@ -49,9 +50,13 @@ class _SignInState extends State<SignIn> {
 
     _controller.listenToEvents();
 
-    viewStateListener = _controller.viewState.stream.distinct().listen((viewstate) {
+    businessLogicEventsListener = _controller.businessLogicEventsStream.distinct().listen((event) {
+      if (dialogOverlayContext != null){
+        Navigator.pop(dialogOverlayContext!);
+        dialogOverlayContext = null;
+      }
 
-      if (viewstate.loading){
+      if (event is ShowLoadingDialog){
         dialogOverlayContext = Get.overlayContext;
         showDialog(context: dialogOverlayContext!, builder: (_){
           return Dialog(
@@ -59,24 +64,41 @@ class _SignInState extends State<SignIn> {
             child: SizedBox(
               height: 300.0,
               width: 300.0,
-              child: Row(
-                children: const [
-                  Text("Wait ..."),
-                  SizedBox(width: 10.0,),
-                  CircularProgressIndicator()
-                ],
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: Row(
+                    children: const [
+                      Text("Wait ..."),
+                      SizedBox(width: 10.0,),
+                      CircularProgressIndicator()
+                    ],
+                  ),
+                ),
               ),
             ),
           );
         } , barrierDismissible: true);
-      } else {
-        if (dialogOverlayContext != null){
-          Navigator.pop(dialogOverlayContext!);
-          dialogOverlayContext = null;
-        }
       }
 
-      if (viewstate.successfulLogin){
+      if (event is ShowErrorDialog){
+        dialogOverlayContext = Get.overlayContext;
+        showDialog(context: dialogOverlayContext!, builder: (_){
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            child: SizedBox(
+              height: 300.0,
+              width: 300.0,
+              child: Center(
+                child: Text(_viewLoginErrorMessage(event.error) ,
+                    style: const TextStyle(fontWeight: FontWeight.bold , fontSize: 18.0)),
+              ),
+            ),
+          );
+        });
+      }
+
+      if (event is ShowSuccessFullLoginDialog){
         dialogOverlayContext = Get.overlayContext;
         showDialog(context: dialogOverlayContext!, builder: (_){
           return Dialog(
@@ -85,8 +107,10 @@ class _SignInState extends State<SignIn> {
               height: 300.0,
               width: 300.0,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Login successfully"),
+                  const Text("Login successfully" ,
+                      style: TextStyle(fontWeight: FontWeight.bold , fontSize: 18.0)),
                   ElevatedButton(
                       onPressed: (){
                         Navigator.pop(dialogOverlayContext!);
@@ -100,7 +124,7 @@ class _SignInState extends State<SignIn> {
         } , barrierDismissible: false);
       }
 
-      if (viewstate.fillAccountData){
+      if (event is ShowGoToFillAccountDataDialog){
         dialogOverlayContext = Get.overlayContext;
         showDialog(context: dialogOverlayContext!, builder: (_){
           return Dialog(
@@ -109,8 +133,11 @@ class _SignInState extends State<SignIn> {
               height: 300.0,
               width: 300.0,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("You have verified the email now finish your account data"),
+                  const Text("You have verified the email now finish your account data" ,
+                    style: TextStyle(fontWeight: FontWeight.bold , fontSize: 18.0),),
+                  const SizedBox(height: 20.0,),
                   ElevatedButton(
                       onPressed: (){
                         Navigator.pop(dialogOverlayContext!);
@@ -124,33 +151,6 @@ class _SignInState extends State<SignIn> {
         } , barrierDismissible: false);
       }
 
-      if (viewstate.isEmailNotVerified){
-        showDialog(context: context, builder: (_){
-          return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-            child: const SizedBox(
-              height: 300.0,
-              width: 300.0,
-              child: Text("You have to verify the email first"),
-            ),
-          );
-        });
-      }
-
-
-
-      if (viewstate.error != ""){
-        showDialog(context: context, builder: (_){
-          return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-            child: SizedBox(
-              height: 300.0,
-              width: 300.0,
-              child: Text(viewstate.error),
-            ),
-          );
-        });
-      }
     });
 
   }
@@ -451,6 +451,35 @@ class _SignInState extends State<SignIn> {
       }
       default: {
         return null;
+      }
+    }
+  }
+
+  String _viewLoginErrorMessage(String errorCode){
+    switch(errorCode){
+      case "invalid-email":{
+        return "Your email is not valid";
+      }
+      case "user-disabled":{
+        return "Your account has been disabled";
+      }
+      case "user-not-found":{
+        return "Your account is not found please sign up first";
+      }
+      case "wrong-password":{
+        return "This is a wrong password buddy";
+      }
+      case "email-not-verified":{
+        return "Your email is not verified";
+      }
+      case "network-request-failed":{
+        return "No internet";
+      }
+      case "invalid-inputs":{
+        return "Correct the input errors first";
+      }
+      default:{
+        throw "Error code not defined";
       }
     }
   }

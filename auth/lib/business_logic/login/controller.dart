@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auth/business_logic/login/busuness_logic_events.dart';
 import 'package:auth/business_logic/login/events.dart';
 import 'package:auth/business_logic/login/login_datasource.dart';
 import 'package:auth/business_logic/login/login_event_carrier.dart';
@@ -13,13 +14,8 @@ class LoginController extends GetxController{
   late final LoginUseCase _useCase;
   final InputsValidationUseCase _validationUseCase = InputsValidationUseCase();
   final Rx<LoginViewState> viewState = LoginViewState(
-      loading: false,
-      error: "",
-      successfulLogin: false,
       emailError: ValidationErrors.NONE,
-      passwordError: ValidationErrors.NONE,
-      fillAccountData: false,
-      isEmailNotVerified: false
+      passwordError: ValidationErrors.NONE
   ).obs;
 
   LoginEventCarrier _eventCarrier = LoginEventCarrier(
@@ -28,8 +24,11 @@ class LoginController extends GetxController{
   );
 
   StreamSubscription? _eventCarrierListener;
-  final StreamController<Events> _eventsStream = StreamController();
+  final StreamController<LoginEvents> _eventsStream = StreamController.broadcast();
+  final StreamController<BusinessLogicEvents> _businessLogicEvents = StreamController.broadcast();
 
+
+  Stream<BusinessLogicEvents> get businessLogicEventsStream => _businessLogicEvents.stream;
 
 
   LoginController(LoginDataSource dataSource){
@@ -83,25 +82,17 @@ class LoginController extends GetxController{
 
   _login() async {
     if (viewState.value.passwordError != ValidationErrors.NONE || viewState.value.emailError != ValidationErrors.NONE){
-      _updateViewState(viewState.value.copy(error: "Correct the input errors first"));
-      resetViewState();
+      _businessLogicEvents.add(const ShowErrorDialog("invalid-inputs"));
       return;
     }
-    _updateViewState(viewState.value.copy(loading: true));
-    _updateViewState(await _useCase.login(viewState.value, _eventCarrier.email, _eventCarrier.password));
-    resetViewState();
+    _businessLogicEvents.add(ShowLoadingDialog());
+    _businessLogicEvents.add(await _useCase.login(_eventCarrier.email, _eventCarrier.password));
   }
 
   _updateViewState(LoginViewState loginViewState){
     viewState.value = loginViewState;
   }
 
-  resetViewState(){
-    viewState.value = viewState.value.copy(
-      isEmailNotVerified: false,
-      error: ""
-    );
-  }
 
   @override
   void onClose() {
