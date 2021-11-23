@@ -1,16 +1,3 @@
 # deliver_me_driver
 
-deliver_me driver app
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<img src="/imgs/1.png"/> <img src="/imgs/2.png"/> <img src="/imgs/3.png"/> <img src="/imgs/4.png"/> <img src="/imgs/5.png"/> <img src="/imgs/6.png"/> <img src="/imgs/7.png"/> <img src="/imgs/8.png"/> <img src="/imgs/9.png"/> <img src="/imgs/10.png"/> <img src="/imgs/11.png"/> 
