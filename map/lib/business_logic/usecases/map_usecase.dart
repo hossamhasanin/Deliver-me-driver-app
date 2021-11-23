@@ -1,5 +1,7 @@
 import 'package:base/base.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:map/business_logic/data/accepted_tip_wrapper.dart';
 import 'package:map/business_logic/data/datasource.dart';
 import 'package:map/business_logic/viewstate.dart';
 
@@ -9,10 +11,10 @@ class MapUseCase {
 
   MapUseCase(this._dataSource);
 
-  Stream<ViewState> listenToTheAvailableTrips(ViewState viewstate){
-    return _dataSource.listenToRequestedTrips(Location(latitude: viewstate.myLocation.latitude, longitude: viewstate.myLocation.longitude)).map((trips) {
+  Stream<ViewState> listenToTheAvailableTrips(Rx<ViewState> viewstate){
+    return _dataSource.listenToRequestedTrips(Location(latitude: viewstate.value.myLocation.latitude, longitude: viewstate.value.myLocation.longitude)).map((trips) {
       print("trips : "+ trips.length.toString());
-      return viewstate.copy(tripsData: trips , loading: false , myPreviousCentralLocation: viewstate.myLocation);
+      return viewstate.value.copy(tripsData: trips , loading: false , myPreviousCentralLocation: viewstate.value.myLocation);
     });
   }
 
@@ -21,7 +23,8 @@ class MapUseCase {
       await _dataSource.acceptTheTrip(tripData , Location(latitude: viewState.myLocation.latitude, longitude: viewState.myLocation.longitude));
       return viewState.copy(myPreviousCentralLocation: const LatLng(0.0, 0.0) , loading: false , error: "" , tripsData: [], acceptedTripWrapper: viewState.acceptedTripWrapper.copy(acceptedTrip: tripData));
     } catch(e){
-      return viewState.copy(loading: false , error: "" , acceptedTripWrapper: viewState.acceptedTripWrapper.copy(acceptedTrip: const TripData()));
+      print("koko map usecase acceptTrip error : "+e.toString());
+      return viewState.copy(loading: false , error: e.toString() , acceptedTripWrapper: viewState.acceptedTripWrapper.copy(acceptedTrip: const TripData()));
     }
   }
 
@@ -50,7 +53,7 @@ class MapUseCase {
   Future<ViewState> cancelTrip(ViewState viewState) async {
     try{
       await _dataSource.updateTripState(TripStates.noDriverAssigned , viewState.acceptedTripWrapper.acceptedTrip.id!);
-      return viewState.copy(acceptedTripWrapper: viewState.acceptedTripWrapper.copy(acceptedTrip: const TripData()));
+      return viewState.copy(acceptedTripWrapper: AcceptedTripWrapper.init() , openedToExploreTrip: const TripData());
     } catch(e){
       return viewState.copy(error: e.toString());
     }

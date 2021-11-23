@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: MAP_SCREEN, page: () => Builder(
           builder: (context) {
             UserDataSource _userDatasource = Get.find();
-            _userDatasource.listenToUserData();
+            _userDatasource.listenToUserData().listen((event) {});
             return const MapScreen();
           }
         )),

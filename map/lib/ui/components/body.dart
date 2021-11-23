@@ -119,13 +119,17 @@ class _BodyState extends State<Body> {
           }),
     
           Obx((){
-    
+
+
             if (_mapController.viewState.value.openedToExploreTrip.id != null){
               _tripInfoBoxHeight = 250.0;
+              if (_mapController.viewState.value.acceptedTripWrapper.acceptedTrip.id == null){
+                _pageController.animateToPage(0, duration: const Duration(seconds: 1), curve: Curves.easeIn);
+              }
             } else {
               _tripInfoBoxHeight = 0.0;
             }
-    
+
             if (_mapController.viewState.value.acceptedTripWrapper.acceptedTrip.id != null){
               _pageController.animateToPage(1, duration: const Duration(seconds: 1), curve: Curves.easeIn);
             }
@@ -288,12 +292,14 @@ class _BodyState extends State<Body> {
               },
               child: Dialog(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-                child: SizedBox(
-                  height: 300.0,
-                  width: 300.0,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text("The trip has ended , $message"),
+                      const SizedBox(height: 20.0,),
                       ElevatedButton(
                           onPressed: (){
                             Navigator.pop(dialogOverlayContext!);

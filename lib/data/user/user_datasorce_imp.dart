@@ -23,11 +23,13 @@ class UserDataSourceImp extends UserDataSource{
     //     img: "https://www.volvotrucks.com/content/dam/volvo-trucks/markets/master/home/services-updates/driver-support/driver-development/driver-support-steering-wheel.jpg"
     // )).asBroadcastStream();
 
+    print("koko user stream listen here ");
     if (isLoggedIn()){
       var query = _firestore.collection(USERS).doc(_firebaseAuth.currentUser!.uid);
 
-      yield* query.snapshots().where((doc) => doc.exists).map((doc) { 
-        _user = User.fromMap(doc.data()!);  
+      yield* query.snapshots().where((doc) => doc.exists).map((doc) {
+        _user = User.fromMap(doc.data()!);
+        print("koko user stream here : "+_user.toString());
         return _user;
       });
     }else{

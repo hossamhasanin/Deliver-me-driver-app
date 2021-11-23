@@ -37,6 +37,9 @@ class MapDataSourceImp extends MapDataSource {
     return stream.map((documents) {
       print("trips data : "+documents.length.toString());
       return documents.map((doc) => TripData.fromDocument(doc.data()!, (geoPoint) {
+        if (geoPoint == null){
+          return null;
+        }
         return Location(latitude: (geoPoint as GeoPoint).latitude, longitude: geoPoint.longitude);
       })).toList();
     });
@@ -49,6 +52,7 @@ class MapDataSourceImp extends MapDataSource {
     GeoFirePoint driverLocation = geo.point(latitude: location.latitude!, longitude: location.longitude!);
 
     var user = _userDataSource.user;
+    print("koko map datasource error : "+ user.toString());
 
     return query.update({
       "driverLocation" : driverLocation.geoPoint,

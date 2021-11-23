@@ -11,7 +11,8 @@ class TripDetailedInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return tripData.clintPersonalData != null ? SingleChildScrollView(
+    print("koko open up : "+tripData.clintPersonalData.toString());
+    return tripData.id != null ? SingleChildScrollView(
       child: Column(
         children: [
           Stack(

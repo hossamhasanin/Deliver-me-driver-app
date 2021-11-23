@@ -100,19 +100,23 @@ class MapController extends GetxController {
     if (_tripsDataSubscription != null){
       _tripsDataSubscription!.cancel();
     }
-    _tripsDataSubscription = _useCase.listenToTheAvailableTrips(viewState.value).listen((viewState) {
+    _tripsDataSubscription = _useCase.listenToTheAvailableTrips(viewState).listen((viewState) {
       this.viewState.value = viewState;
     });
   }
 
   openTripToExplore(TripData tripData){
     viewState.value = viewState.value.copy(openedToExploreTrip: tripData);
+
+    print("koko open up : "+viewState.value.openedToExploreTrip.toString());
   }
 
   acceptTrip() async {
     viewState.value = viewState.value.copy(loading: true);
     viewState.value = await _useCase.acceptAtrip(viewState.value.openedToExploreTrip, viewState.value);
     _tripsDataSubscription!.cancel();
+    print("koko map controller acceptTrip : "+viewState.value.acceptedTripWrapper.acceptedTrip.id.toString());
+    print("koko map controller acceptTrip : "+viewState.value.openedToExploreTrip.id.toString());
 
     _listenToAcceptedTrip();
     _setDirectionRoute();
@@ -137,6 +141,9 @@ class MapController extends GetxController {
 
   cancelTrip() async {
     viewState.value = await _useCase.cancelTrip(viewState.value);
+
+    _acceptedTripSubscription!.cancel();
+    listenToTrips();
   }
 
   pickUpTheClient() async {

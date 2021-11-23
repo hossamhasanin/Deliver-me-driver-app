@@ -48,10 +48,10 @@ class TripData extends Equatable {
     paymentMethod
   ];
 
-  static TripData fromDocument(Map<String , dynamic> doc , Location? Function(Object) geoPointToLocationAdapterFunction){
+  static TripData fromDocument(Map<String , dynamic> doc , Location? Function(Object?) geoPointToLocationAdapterFunction){
     return TripData(
         id: doc["id"],
-        destinationAddress: doc["destinationAddress"],
+        destinationAddress: doc["dropOffAddress"],
         pickUpAddress: doc["pickUpAddress"],
         encodedPolyLinePoints: doc["encodedPolyLinePoints"],
         pickUpLocation: geoPointToLocationAdapterFunction(doc["pickUpLocationMap"]["geopoint"]),
